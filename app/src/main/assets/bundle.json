@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "bundles": [
+    {
+      "uri": "upgrade",
+      "pkg": "com.demo.small.update.app.upgrade"
+    }
+  ]
+}
