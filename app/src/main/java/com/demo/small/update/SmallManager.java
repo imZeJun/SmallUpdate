@@ -6,8 +6,12 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
+
 import net.wequick.small.Bundle;
 import net.wequick.small.Small;
+import net.wequick.small.util.FileUtils;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.io.File;
@@ -15,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class SmallManager {
@@ -24,6 +29,7 @@ public class SmallManager {
 
     private Handler mWorkerHandler;
     private Handler mUiHandler;
+    private static HashMap<String, String> sMap = new HashMap<>();
 
     private SmallManager() {
         HandlerThread workThread = new HandlerThread("workThread");
@@ -32,12 +38,46 @@ public class SmallManager {
         mUiHandler = new MHandler(Looper.getMainLooper());
     }
 
+    public void requestInitPlug() {
+        mWorkerHandler.sendEmptyMessage(MHandler.MSG_REQ_INIT_PLUG);
+    }
+
+    private void initPlug() {
+        //表明需要从外部加载插件。
+        Small.setLoadFromAssets(true);
+        try {
+            File dstFile = new File(FileUtils.getInternalBundlePath(), "com.demo.small.update.app.upgrade.apk");
+            if (!dstFile.exists()) {
+                boolean create = dstFile.createNewFile();
+            }
+            File srcFile = new File(Environment.getExternalStorageDirectory().toString() + "/Small/" + "libcom_demo_small_update_app_upgrade.so");
+            FileInputStream inputStream = new FileInputStream(srcFile);
+            OutputStream outputStream = new FileOutputStream(dstFile);
+            byte[] buffer = new byte[1024];
+            int length;
+            //将.so的内容写入到.apk当中。
+            while ((length = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, length);
+            }
+            outputStream.flush();
+            outputStream.close();
+            inputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void onPlugInit() {
+
+    }
+
     public void requestUpgrade() {
         mWorkerHandler.sendEmptyMessage(MHandler.MSG_REQ_UPGRADE);
     }
 
     private void onUpgraded(boolean success) {
         Log.d(TAG, "onUpgraded, success=" + success);
+        Toast.makeText(SmallApp.getAppContext(), "onUpgraded=" + success, Toast.LENGTH_SHORT).show();
     }
 
     private void upgrade() {
@@ -145,6 +185,8 @@ public class SmallManager {
 
         private static final int MSG_REQ_UPGRADE = 0;
         private static final int MSG_UPGRADE_FINISHED = 1;
+        private static final int MSG_REQ_INIT_PLUG = 2;
+        private static final int MSG_PLUG_INIT_FINISHED = 3;
 
         public MHandler(Looper looper) {
             super(looper);
@@ -159,6 +201,12 @@ public class SmallManager {
                     break;
                 case MSG_UPGRADE_FINISHED:
                     onUpgraded((boolean) msg.obj);
+                    break;
+                case MSG_REQ_INIT_PLUG:
+                    initPlug();
+                    break;
+                case MSG_PLUG_INIT_FINISHED:
+                    onPlugInit();
                     break;
                 default:
                     break;
