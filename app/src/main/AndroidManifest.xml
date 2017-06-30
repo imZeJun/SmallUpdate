@@ -17,6 +17,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Service 测试 -->
+        <activity
+            android:name=".ServiceSampleActivity"
+            android:label="@string/title_activity_service_sample">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <!-- 占位的 Service -->
+        <service android:name=".StubService"/>
     </application>
 
 </manifest>

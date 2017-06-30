@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SmallUpdate</string>
+    <string name="title_activity_service_sample">ServiceSampleActivity</string>
 </resources>
